@@ -114,6 +114,11 @@ public class OpenCVImageDiff {
 				key = "threshold";
 				nextShouldBeAnOption = true;
 				break;
+			case "-e":
+			case "--epsilon":
+				key = "epsilon";
+				nextShouldBeAnOption = true;
+				break;
 			case "-dd":
 			case "--dispaly-diff":
 				showDiffImage = true;
@@ -187,6 +192,7 @@ public class OpenCVImageDiff {
 				+ "        * CV_TM_CCOEFF\n"
 				+ "        * CV_TM_CCOEFF_NORMED\n"
 				+ "  -t, --threshold        Threshold used in diff comparisons\n"
+				+ "  -e, --epsilon          Epsilon used in diff comparisons: (threshold - diff) > epsilon\n"
 				+ "  -dd, --display-diff    Display on a graphical window the diff result\n"
 				+ "  -v, --verbose          Improve output log\n"
 				+ "  -h, --help             Show this help and exit\n"

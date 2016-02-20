@@ -19,6 +19,7 @@ import org.opencv.imgproc.Imgproc;
 public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 
 	private static final double DEFAULT_THRESHOLD = 0.9999;
+	private static final double DEFAULT_EPSILON = 0.0019;
 	private static final int DEFAULT_METHOD = Imgproc.TM_CCORR_NORMED;
 	
 	private File template;
@@ -26,12 +27,14 @@ public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 	private int method;
 	private boolean verbose;
 	private double threshold;
+	private double epsilon;
 	
 	OpenCVMatchResultImageDiff() {
 		// default values
 		this.verbose = false;
 		this.method = DEFAULT_METHOD;
 		this.threshold = DEFAULT_THRESHOLD;
+		this.epsilon = DEFAULT_EPSILON;
 	}
 	
 	@Override
@@ -72,6 +75,9 @@ public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 				break;
 			case "threshold":
 				this.threshold = Double.parseDouble(value);
+				break;
+			case "epsilon":
+				this.epsilon = Double.parseDouble(value);
 				break;
 			}
 		}
@@ -123,7 +129,7 @@ public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 	
 					if (verbose) {
 						System.out.println("rect is from (" + i + "," + j + ")"
-								+ " to (" + (i + width) + "," + (j + height) + ")");
+								+ "to (" + (i + width) + "," + (j + height) + ")");
 					}
 	
 					try {
@@ -161,7 +167,7 @@ public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 								for (int k = 0; k < resultData.length; k++) {
 									double res = resultData[k];
 	
-									if (Math.abs(threshold - res) > 0.01) {
+									if (Math.abs(threshold - res) > epsilon) {
 										// System.out.println(Math.abs(threshold - res));
 										
 										String errorMessage = "Images contains differences between ("
