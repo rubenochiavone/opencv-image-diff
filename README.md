@@ -34,9 +34,9 @@ Usage: [OPTIONS]... IMAGE1 IMAGE2
 
 OPTIONS can be the following:
 
-- **-a**, **--algorithm**: OpenCV algorithm to be used. Following OpenCV algorithms are supported:
+- **-a**, **--algorithm** - OpenCV algorithm to be used. Following OpenCV algorithms are supported:
   - **matchResult** (default)
-- **-m**, **--method**: OpenCV method of the specified algorithm. Available methods for each algorithm:
+- **-m**, **--method** - OpenCV method of the specified algorithm. Available methods for each algorithm:
   - **matchResult**:
     - **CV_TM_SQDIFF**
     - **CV_TM_SQDIFF_NORMED**
@@ -44,9 +44,10 @@ OPTIONS can be the following:
     - **CV_TM_CCORR_NORMED (default)**
     - **CV_TM_CCOEFF**
     - **CV_TM_CCOEFF_NORMED**
-- **-t**, **--threshold**: Threshold used in diff comparisons
-- **-dd**, **--display-diff**: Display on a graphical window the diff result
-- **-v**, **--verbose**: Improve output log
+- **-t**, **--threshold** - Threshold used in diff comparisons
+- **-e**, **--epsilon** - Epsilon used in diff comparisons: `(threshold - diff) > epsilon`
+- **-dd**, **--display-diff** - Display on a graphical window the diff result
+- **-v**, **--verbose** - Improve output log
 
 ## Library
 
