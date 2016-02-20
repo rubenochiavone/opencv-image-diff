@@ -2,177 +2,205 @@ package org.nebur.opencv.java;
 
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvException;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-
 public class OpenCVImageDiff {
 
+	private static OpenCVImageDiffer differ = null;
+	private static Map<String, String> options = new HashMap<String, String>();
+	private static File image1 = null;
+	private static File image2 = null;
+	private static boolean showDiffImage = false;
+	// FIXME: find a usage to verbose here
+	// private static boolean verbose = false;
+	
 	public static void main(String[] args) {
 
-		try {
-			System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-			String imageFile = OpenCVImageDiff.class.getResource(
-					"/res/visu_1.jpg").getPath();
-			String templateFile = OpenCVImageDiff.class.getResource(
-					"/res/visu.jpg").getPath();
-			double threshold = 0.9999;
-
-			Mat img = image2Mat(imageFile);
-			Mat templ = image2Mat(templateFile);
-
-			if (img.cols() != templ.cols() || img.rows() != templ.rows()) {
-				System.err
-						.println("Error: both images need to have same size.");
-
-				return;
-			}
-
-			System.out
-					.println("Images size are " + img.cols() + " x " + img.rows());
-
-			// result matrix
-			// crops most times have the same size
-			Mat result = new Mat(1, 1, CvType.CV_32FC1);
-
-			for (int i = 0; i < img.width(); i += 10) {
-				for (int j = 0; j < img.height(); j += 10) {
-					int width = 20;
-					int height = 20;
-
-					if ((i + 20) > img.width()) {
-						width = img.width() - i;
-					}
-
-					if ((j + 20) > img.height()) {
-						height = img.height() - j;
-					}
-
-					// System.out.println("rect is from (" + i + "," + j + ")"
-					// + "to (" + (i + width) + "," + (j + height) + ")");
-
-					try {
-						Rect rect = new Rect(i, j, width, height);
-						
-						Mat imgRect = img.submat(rect);
-						Mat templRect = templ.submat(rect);
-
-						Mat matchTemplateResult = null;
-
-						if (imgRect.cols() != templRect.cols()
-								|| imgRect.rows() != templRect.rows()) {
-							// create the result matrix
-							int result_cols = imgRect.cols() - templRect.cols() + 1;
-							int result_rows = imgRect.rows() - templRect.rows() + 1;
-							
-							matchTemplateResult = new Mat(result_rows,
-									result_cols, CvType.CV_32FC1);
-						} else {
-							matchTemplateResult = result; // use cached
-						}
-
-						// match template
-						Imgproc.matchTemplate(imgRect, templRect,
-								matchTemplateResult,
-								Imgproc.TM_CCORR_NORMED);
-
-						// normally matchTemplateResult.rows(),
-						// matchTemplateResult.rows()
-						// and resultData.length are equals to 1
-						for (int ii = 0; ii < matchTemplateResult.rows(); ii += 1) {
-							for (int jj = 0; jj < matchTemplateResult.cols(); jj += 1) {
-								double[] resultData = matchTemplateResult.get(ii, jj);
-
-								for (int k = 0; k < resultData.length; k++) {
-									double res = resultData[k];
-
-									if (Math.abs(threshold - res) > 0.01) {
-										// System.out.println(Math.abs(threshold - res));
-										
-										System.err.println("Images contains differences between ("
-														+ i + "," + j + ")"
-														+ " and ("
-														+ (i + width) + ","
-														+ (j + height) + ")");
-										
-										// TODO: warn error in an output file
-										
-										Mat imgError = img.clone();
-										
-										Imgproc.rectangle(imgError,
-												new Point(i, j),
-												new Point(i + width, j + height),
-												new Scalar(0, 0, 255, 255),
-												1);
-										
-										showError(imgError);
-										
-										return;
-									}
-								}
-							}
-						}
-					} catch (CvException e) {
-						// e.printStackTrace();
-					}
-				}
-			}
-
-			System.out.println("Images are propably " + (threshold * 100) + "% equals");
-		} catch (Throwable t) {
-			t.printStackTrace();
+		parseArgs(args);
+		
+		if (differ == null) {
+			System.out.println("Unable to configure differ.");
+			printUsage();
+			System.exit(1);
 		}
-	}
-
-	private static Mat image2Mat(String filePath) throws IOException {
-		File input = new File(filePath);
-
-		BufferedImage image = ImageIO.read(input);
-
-		byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer())
-				.getData();
-
-		Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC3);
-		mat.put(0, 0, data);
-
-		return mat;
+		
+		// setup differ
+		differ.setUp(image1, image2, options);
+		
+		ImageDiffResult imageDiffResult = differ.diff();
+		
+		if (!imageDiffResult.isEquals()) {
+			if (imageDiffResult.getErrorMessage() != null) {
+				System.err.println(imageDiffResult.getErrorMessage());
+			}
+			
+			if (imageDiffResult.getException() != null) {
+				imageDiffResult.getException().printStackTrace();
+			}
+		}
+		
+		if (showDiffImage 
+				&& imageDiffResult.getDiffResult() != null) {
+			try {
+				showDiffImage(imageDiffResult.getDiffResult());
+			} catch (IOException e) {
+				System.err.println("Unable to show diff result: " + e.getMessage());
+			}
+		}
+		
+		// release allocated resources
+		differ.tearDown();
 	}
 	
-	private static void showError(Mat imgError) {
+	private static void parseArgs(String[] args) {
 		
-		int type = BufferedImage.TYPE_BYTE_GRAY;
-		
-		if (imgError.channels() > 1) {
-		    Mat m = new Mat();
-		    Imgproc.cvtColor(imgError, m, Imgproc.COLOR_BGR2RGB);
-		    type = BufferedImage.TYPE_3BYTE_BGR;
-		    imgError = m;
+		if (args.length == 0) {
+			printUsage();
+			System.exit(1);
 		}
 		
-		byte [] b = new byte[imgError.channels() * imgError.cols() * imgError.rows()];
+		boolean nextShouldBeAlgorithm = false;
 		
-		// get all the pixels
-		imgError.get(0, 0, b);
+		String key = null;
+		boolean nextShouldBeAnOption = false;
 		
-		final BufferedImage image = new BufferedImage(imgError.cols(), imgError.rows(), type);
-		image.getRaster().setDataElements(0, 0, imgError.cols(), imgError.rows(), b);
+		String image1Path = null;
+		String image2Path = null;
+		
+		for (int i = 0; i < args.length; i++) {
+			String arg = args[i];
+			
+			if (nextShouldBeAlgorithm) {
+				
+				differ = OpenCVImageDifferFactory.createDiffer(arg);
+				
+				nextShouldBeAlgorithm = false;
+				continue;
+			}
+			
+			if (nextShouldBeAnOption) {
+				
+				options.put(key, arg);
+				
+				key = null;
+				nextShouldBeAnOption = false;
+				continue;
+			}
+			
+			switch (arg) {
+			case "-h":
+			case "--help":
+				printUsage();
+				System.exit(1);
+				break;
+			case "-a":
+			case "--algorithm":
+				nextShouldBeAlgorithm = true;
+				break;
+			case "-m":
+			case "--method":
+				key = "method";
+				nextShouldBeAnOption = true;
+				break;
+			case "-t":
+			case "--threshold":
+				key = "threshold";
+				nextShouldBeAnOption = true;
+				break;
+			case "-dd":
+			case "--dispaly-diff":
+				showDiffImage = true;
+				break;
+			case "-v":
+			case "--verbose":
+				// FIXME: find a usage to verbose here
+				// verbose = true;
+				options.put("verbose", "true");
+				break;
+			default:
+				if (i == (args.length - 2)) {
+					if (new File(arg).exists()) {
+						image1Path = arg;
+						break;
+					}
+				}
+				
+				if (i == (args.length - 1)) {
+					if (new File(arg).exists()) {
+						image2Path = arg;
+						break;
+					}
+				}
+				
+				System.out.println("Unrecognized option: '" + arg + "'");
+			}
+		}
+		
+		if (image1Path == null
+				|| image2Path == null) {
+			printUsage();
+			System.exit(1);
+		}
+		
+		image1 = new File(image1Path);
+		
+		if (!image1.exists()) {
+			System.err.println("No such file or directory: '" + image1Path + "'");
+			System.exit(1);
+		}
+		
+		image2 = new File(image2Path);
+		
+		if (!image2.exists()) {
+			System.err.println("No such file or directory: '" + image2Path + "'");
+			System.exit(1);
+		}
+		
+		if (differ == null) {
+			// default
+			differ = OpenCVImageDifferFactory.createDefaultDiffer();
+		}
+	}
+	
+	private static void printUsage() {
+		System.out.println("Usage: [OPTIONS]... IMAGE1 IMAGE2\n"
+				+ "Measure difference between two images using OpenCV.\n"
+				+ "\n"
+				+ "OPTIONS can be the following:\n"
+				+ "  -a, --algorithm        OpenCV algorithm to be used\n"
+				+ "    Following OpenCV algorithms are supported:\n"
+				+ "      * matchResult (default)\n"
+				+ "  -m, --method           OpenCV method of the specified algorithm\n"
+				+ "    Available methods for each algorithm:\n"
+				+ "      * matchResult:\n"
+				+ "        * CV_TM_SQDIFF\n"
+				+ "        * CV_TM_SQDIFF_NORMED\n"
+				+ "        * CV_TM_CCORR\n"
+				+ "        * CV_TM_CCORR_NORMED (default)\n"
+				+ "        * CV_TM_CCOEFF\n"
+				+ "        * CV_TM_CCOEFF_NORMED\n"
+				+ "  -t, --threshold        Threshold used in diff comparisons\n"
+				+ "  -dd, --display-diff    Display on a graphical window the diff result\n"
+				+ "  -v, --verbose          Improve output log\n"
+				+ "  -h, --help             Show this help and exit\n"
+				+ "\n"
+				+ "Report bugs to: rubenochiavone@gmail.com\n"
+				+ "opencv-diff-image home page: <https://github.com/rubenochiavone/opencv-image-diff>");
+	}
+	
+	private static void showDiffImage(File diffImage) throws IOException {
+		
+		final BufferedImage bufferedImage = ImageIO.read(diffImage);
 		
 		final JFrame frame = new JFrame();
-		frame.setSize(imgError.cols(), imgError.rows());
+		frame.setSize(bufferedImage.getWidth(), bufferedImage.getHeight());
 		frame.setContentPane(new JPanel() {
 			
 			private static final long serialVersionUID = 1L;
@@ -180,7 +208,7 @@ public class OpenCVImageDiff {
 			@Override
 		    protected void paintComponent(Graphics g) {
 		        super.paintComponent(g);
-		        g.drawImage(image, 0, 0, null);            
+		        g.drawImage(bufferedImage, 0, 0, null);            
 		    }
 		});
 		frame.setVisible(true);
