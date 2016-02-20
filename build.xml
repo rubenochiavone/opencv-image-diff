@@ -1,0 +1,60 @@
+<project name="opencv-image-diff" default="dist" basedir=".">
+	<description>
+		simple example build file
+	</description>
+
+	<!-- override default properties for this build -->
+	<property file="build.properties" />
+
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+	<property name="version" value="0.1" />
+	<property name="file.jar.opencv" value="/usr/local/share/OpenCV/java/opencv-300.jar" />
+	
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+	</target>
+
+	<target name="compile" depends="init" description="compile the source">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}">
+			<classpath>
+				<pathelement location="${file.jar.opencv}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="dist" depends="compile" description="generate the distribution">
+
+		<!-- Put everything in ${build} into the opencv-image-diff-${version}-${DSTAMP}${DSTAMP}.jar 
+			file -->
+		<jar jarfile="${dist}/opencv-image-diff-bin-${version}-${DSTAMP}${TSTAMP}.jar"
+			basedir="${build}">
+			<manifest>
+				<attribute name="Main-Class" value="org.nebur.opencv.java.OpenCVImageDiff" />
+			</manifest>
+		</jar>
+
+		<delete file="${build}/org/nebur/opencv/java/OpenCVImageDiff.class" />
+
+		<!-- Put everything in ${build} into the opencv-image-diff-${version}-${DSTAMP}${DSTAMP}.jar 
+			file -->
+		<jar jarfile="${dist}/opencv-image-diff-lib-${version}-${DSTAMP}${TSTAMP}.jar"
+			basedir="${build}" />
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} directory trees -->
+		<delete dir="${build}" />
+	</target>
+
+	<target name="distclean" description="dist clean up" depends="clean">
+		<!-- Delete the ${dist} directory trees -->
+		<delete dir="${dist}" />
+	</target>
+</project>
