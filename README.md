@@ -36,7 +36,11 @@ OPTIONS can be the following:
 
 - **-a**, **--algorithm** - OpenCV algorithm to be used. Following OpenCV algorithms are supported:
   - **matchResult** (default)
+    - IMAGE1 = template
+    - IMAGE2 = test
   - **compareHist**
+    - IMAGE1 = base
+    - IMAGE2 = test
 - **-m**, **--method** - OpenCV method of the specified algorithm. Available methods for each algorithm:
   - **matchResult**:
     - **CV_TM_SQDIFF**
@@ -53,8 +57,15 @@ OPTIONS can be the following:
 - **-t**, **--threshold** - Threshold used in diff comparisons
 - **-e**, **--epsilon** - Epsilon used in diff comparisons: `(threshold - diff) > epsilon`
 - **-dd**, **--display-diff** - Display on a graphical window the diff result
+- **-mr**, **--merge-rects** - Merge error rectangles when display diff is enabled
 - **-v**, **--verbose** - Improve output log
 
 ## Library
 
 @TODO: doc library jar
+
+## OpenCV
+
+In order to better understand returned values and else take a look at:
+  - Template Matching: http://docs.opencv.org/3.0.0/de/da9/tutorial_template_matching.html  
+  - Histogram Comparison: http://docs.opencv.org/3.0.0/d8/dc8/tutorial_histogram_comparison.html
