@@ -44,6 +44,8 @@ public class OpenCVImageDiff {
 			if (imageDiffResult.getException() != null) {
 				imageDiffResult.getException().printStackTrace();
 			}
+		} else {
+			System.err.println("Images are equals");
 		}
 		
 		if (showDiffImage 
@@ -182,6 +184,14 @@ public class OpenCVImageDiff {
 				+ "  -a, --algorithm        OpenCV algorithm to be used\n"
 				+ "    Following OpenCV algorithms are supported:\n"
 				+ "      * matchResult (default)\n"
+				+ "        * IMAGE1 = template\n"
+				+ "        * IMAGE2 = test\n"
+				+ "      * compareHist\n"
+				+ "        * IMAGE1 = base\n"
+				+ "        * IMAGE2 = test\n"
+				+ "    In order to better understand returned values and else take a look at:\n"
+				+ "      * <http://docs.opencv.org/3.0.0/de/da9/tutorial_template_matching.html>\n"
+				+ "      * <http://docs.opencv.org/3.0.0/d8/dc8/tutorial_histogram_comparison.html>\n"
 				+ "  -m, --method           OpenCV method of the specified algorithm\n"
 				+ "    Available methods for each algorithm:\n"
 				+ "      * matchResult:\n"
@@ -191,9 +201,15 @@ public class OpenCVImageDiff {
 				+ "        * CV_TM_CCORR_NORMED (default)\n"
 				+ "        * CV_TM_CCOEFF\n"
 				+ "        * CV_TM_CCOEFF_NORMED\n"
-				+ "  -t, --threshold        Threshold used in diff comparisons\n"
-				+ "  -e, --epsilon          Epsilon used in diff comparisons: (threshold - diff) > epsilon\n"
+				+ "      * compareHist:\n"
+				+ "        * CV_COMP_CORREL (default)\n"
+				+ "        * CV_COMP_CHISQR\n"
+				+ "        * CV_COMP_INTERSECT\n"
+				+ "        * CV_COMP_BHATTACHARYYA\n"
+				+ "  -t, --threshold        Threshold used in diff comparisons. Default: each algorithm has it own\n"
+				+ "  -e, --epsilon          Epsilon used in diff comparisons: (threshold - diff) > epsilon. Default: each algorithm has it own\n"
 				+ "  -dd, --display-diff    Display on a graphical window the diff result\n"
+				+ "  -mr, --merge-rects     Merge error rectangles when display diff is enabled\n"
 				+ "  -v, --verbose          Improve output log\n"
 				+ "  -h, --help             Show this help and exit\n"
 				+ "\n"

@@ -12,11 +12,12 @@ public final class OpenCVImageDifferFactory {
 	}
 
 	public static OpenCVImageDiffer createDiffer(String impl) {
-		// TODO Auto-generated method stub
 		
 		switch (impl) {
 		case "matchResult":
 			return new OpenCVMatchResultImageDiff();
+		case "compareHist":
+			return new OpenCVCompareHistImageDiff();
 		}
 		
 		return null;
