@@ -4,7 +4,7 @@ Compare images using OpenCV library through its Java bindings
 
 ## Compile
 
-Change OpenCV file jar location in file `build.properties` according to your opencv installation path.
+Change OpenCV file jar location in file `build.properties` according to your OpenCV installation path.
 Default is `/usr/local/share/OpenCV/java/opencv-300.jar`.
 
 ```
@@ -36,6 +36,7 @@ OPTIONS can be the following:
 
 - **-a**, **--algorithm** - OpenCV algorithm to be used. Following OpenCV algorithms are supported:
   - **matchResult** (default)
+  - **compareHist**
 - **-m**, **--method** - OpenCV method of the specified algorithm. Available methods for each algorithm:
   - **matchResult**:
     - **CV_TM_SQDIFF**
@@ -44,6 +45,11 @@ OPTIONS can be the following:
     - **CV_TM_CCORR_NORMED (default)**
     - **CV_TM_CCOEFF**
     - **CV_TM_CCOEFF_NORMED**
+  - **compareHist**:
+    - **CV_COMP_CORREL (default)**
+    - **CV_COMP_CHISQR**
+    - **CV_COMP_INTERSECT**
+    - **CV_COMP_BHATTACHARYYA**
 - **-t**, **--threshold** - Threshold used in diff comparisons
 - **-e**, **--epsilon** - Epsilon used in diff comparisons: `(threshold - diff) > epsilon`
 - **-dd**, **--display-diff** - Display on a graphical window the diff result
