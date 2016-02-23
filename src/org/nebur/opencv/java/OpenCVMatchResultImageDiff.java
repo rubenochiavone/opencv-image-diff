@@ -28,10 +28,12 @@ public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 	private boolean verbose;
 	private double threshold;
 	private double epsilon;
+	private boolean mergeRectErrors; // FIXME: impl this feature
 	
 	OpenCVMatchResultImageDiff() {
 		// default values
 		this.verbose = false;
+		this.mergeRectErrors = false;
 		this.method = DEFAULT_METHOD;
 		this.threshold = DEFAULT_THRESHOLD;
 		this.epsilon = DEFAULT_EPSILON;
@@ -78,6 +80,9 @@ public final class OpenCVMatchResultImageDiff extends OpenCVImageDiffer {
 				break;
 			case "epsilon":
 				this.epsilon = Double.parseDouble(value);
+				break;
+			case "mergeRectErrors":
+				this.mergeRectErrors = Boolean.parseBoolean(value);
 				break;
 			}
 		}

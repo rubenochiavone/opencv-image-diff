@@ -131,6 +131,13 @@ public class OpenCVImageDiff {
 				// verbose = true;
 				options.put("verbose", "true");
 				break;
+			case "-mr":
+			case "--merge-rects":
+				// TODO: impl this feature
+				System.err.println("Merge rects yet not supported");
+				
+				options.put("mergeRectErrors", "true");
+				break;
 			default:
 				if (i == (args.length - 2)) {
 					if (new File(arg).exists()) {
@@ -189,9 +196,6 @@ public class OpenCVImageDiff {
 				+ "      * compareHist\n"
 				+ "        * IMAGE1 = base\n"
 				+ "        * IMAGE2 = test\n"
-				+ "    In order to better understand returned values and else take a look at:\n"
-				+ "      * <http://docs.opencv.org/3.0.0/de/da9/tutorial_template_matching.html>\n"
-				+ "      * <http://docs.opencv.org/3.0.0/d8/dc8/tutorial_histogram_comparison.html>\n"
 				+ "  -m, --method           OpenCV method of the specified algorithm\n"
 				+ "    Available methods for each algorithm:\n"
 				+ "      * matchResult:\n"
@@ -212,6 +216,10 @@ public class OpenCVImageDiff {
 				+ "  -mr, --merge-rects     Merge error rectangles when display diff is enabled\n"
 				+ "  -v, --verbose          Improve output log\n"
 				+ "  -h, --help             Show this help and exit\n"
+				+ "\n"
+				+ "In order to better understand returned values and else take a look at:\n"
+				+ "  * <http://docs.opencv.org/3.0.0/de/da9/tutorial_template_matching.html>\n"
+				+ "  * <http://docs.opencv.org/3.0.0/d8/dc8/tutorial_histogram_comparison.html>\n"
 				+ "\n"
 				+ "Report bugs to: rubenochiavone@gmail.com\n"
 				+ "opencv-diff-image home page: <https://github.com/rubenochiavone/opencv-image-diff>");
